@@ -150,16 +150,30 @@ def select_recording():
             # all_ids = [95,86,178,2024,2023,2026,84,182,2030,2025,2028,191,180,2029,82,2076,2043,2074,2048,2089,2090,2075,2078,2042,2049,2079,2099]
             all_ids = [178,182,191,180,2076,2074,2089,2090,2075,2078,2079,2099]
 
-        recording = all_ids[randrange(len(all_ids))]
+        not_enough_recording_available = False
 
+        result_least_annotation = eng.execute('''select count(num_annotation) from "Recording" where num_annotation < 3''')
+        for i in result_least_annotation:
+            least_annotation = int(dict(i)['num_annotation'])
+            if (least_annotation < 12): # if there is less than 12 different recordings available for annotation
+                not_enough_recording_available = True
+
+        recording = all_ids[randrange(len(all_ids))] # random retrieve
         result = eng.execute('''select num_annotation, recording_name from "Recording" where id = ''' + str(recording))
 
         for r in result:
-            if ((int(dict(r)['num_annotation']) < 3) and (recording not in annotated_recording_list)):
-                vertical = 0
-                return "{" + '''"recording_name":{"0":''' + '"' + str(dict(r)['recording_name']) + '"' + "}," + '''"vertical":{"0":''' + str(vertical) + "}," + '''"id":{"0":''' + str(recording) + "}" + "}"
-            else:
-                break
+            if (not_enough_recording_available):
+                if (int(dict(r)['num_annotation']) < 3): # then we allow duplicates to appear
+                    vertical = 0
+                    return "{" + '''"recording_name":{"0":''' + '"' + str(dict(r)['recording_name']) + '"' + "}," + '''"vertical":{"0":''' + str(vertical) + "}," + '''"id":{"0":''' + str(recording) + "}" + "}"
+                else:
+                    break
+            else: 
+                if ((int(dict(r)['num_annotation']) < 3) and (recording not in annotated_recording_list)):
+                    vertical = 0
+                    return "{" + '''"recording_name":{"0":''' + '"' + str(dict(r)['recording_name']) + '"' + "}," + '''"vertical":{"0":''' + str(vertical) + "}," + '''"id":{"0":''' + str(recording) + "}" + "}"
+                else:
+                    break
 
 # select_recording() receives AJAX request from the frontend to update the Confirmation table
 # It also updates the recording id, the folder name, and the completed status of the Survey table
