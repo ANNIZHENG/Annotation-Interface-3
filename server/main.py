@@ -151,12 +151,11 @@ def select_recording():
             all_ids = [178,182,191,180,2076,2074,2089,2090,2075,2078,2079,2099]
 
         recording = all_ids[randrange(len(all_ids))]
-        
+
         result = eng.execute('''select num_annotation, recording_name from "Recording" where id = ''' + str(recording))
 
         for r in result:
-            #? if ((int(dict(r)['num_annotation']) < 3) and (recording not in annotated_recording_list)):
-            if (recording not in annotated_recording_list):
+            if ((int(dict(r)['num_annotation']) < 3) and (recording not in annotated_recording_list)):
                 vertical = 0
                 return "{" + '''"recording_name":{"0":''' + '"' + str(dict(r)['recording_name']) + '"' + "}," + '''"vertical":{"0":''' + str(vertical) + "}," + '''"id":{"0":''' + str(recording) + "}" + "}"
             else:
